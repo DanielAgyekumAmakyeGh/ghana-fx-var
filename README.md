@@ -1,11 +1,11 @@
 # Ghana FX Value-at-Risk Engine
-"""
-GCIB - Quantitative Risk & Financial Engineering
-Author  : Daniel Agyekum Amakye
-Email   : janetobosuayaa@gmail.com
-Role    : Quantitative Analyst - Risk Management
-Module  : Ghana FX VaR Engine + Kupiec Backtest + Portfolio VaR
-"""
+
+**Author:** Daniel Agyekum Amakye
+**Email:** janetobosuayaa@gmail.com
+**Role:** Quantitative Analyst — Risk Management
+**Focus:** Emerging-market (Ghanaian) FX risk modelling
+
+---
 
 ## Overview
 
