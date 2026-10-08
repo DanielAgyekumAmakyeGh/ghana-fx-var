@@ -3,200 +3,206 @@
 **Author:** Daniel Agyekum Amakye
 **Email:** janetobosuayaa@gmail.com
 **Role:** Quantitative Analyst — Risk Management
-**Focus:** Emerging-market (Ghanaian) FX risk modelling
+
+A quantitative risk project modelling a USD 20 million FX book at a
+fictional Ghanaian bank, then calibrating and stress-testing the same
+framework against **10 years of real Bank of Ghana USD/GHS data**.
+
+**The bank is fictional. The methodology, the data, and the findings are real.**
 
 ---
 
-## Overview
+## Two Calibrations
 
-A self-directed quantitative risk project modelling a USD 20 million FX
-book at a fictional Ghanaian bank (Ghana Commercial & Investment Bank — GCIB).
+This repository contains two complementary VaR engines:
 
-The project demonstrates a full market risk stack:
+### 1. Illustrative case (`src/ghana_fx_var.py`)
 
-- Parametric Value-at-Risk (VaR)
-- Expected Shortfall (ES)
-- Dual-regime loss distribution analysis (calm vs. 2022 cedi crisis)
-- Kupiec Proportion-of-Failures (POF) backtesting
-- Multi-currency portfolio VaR (USD, EUR, GBP)
-- Basel III / Bank of Ghana regulatory capital mapping
+A clean teaching example with round numbers — a fictional bank
+(Ghana Commercial & Investment Bank) holding USD 20m at 12.50 GHS/USD,
+with volatility set to a plausible 1.2%/day.
 
-**The bank is fictional. The methodology and regulatory framework are real.**
+**Purpose:** demonstrates the mechanics — parametric VaR, Expected
+Shortfall, Kupiec backtesting, and portfolio VaR — in a controlled
+setting.
+
+### 2. Real-data calibration (`src/var_real_data.py`)
+
+The same framework applied to **2,725 daily observations** of the
+Bank of Ghana's USD/GHS reference rate (2015–2025).
+
+**Purpose:** tests whether the model survives real Ghanaian market
+data — including the 2022 cedi crisis.
 
 ---
 
-## Key Findings
+## Illustrative Case — Key Results
 
 | Metric | Value |
 |---|---|
-| 1-day 99% VaR (calm regime)  | GH₵ 6,979,044 |
-| 10-day 99% VaR (Basel)       | GH₵ 22,069,674 |
-| Expected Shortfall (1-day)   | GH₵ 7,995,643 |
-| 1-day 99% VaR (2022 crisis)  | GH₵ 16,486,441 |
-| Portfolio VaR (USD/EUR/GBP)  | GH₵ 11,529,764 |
-| Diversification benefit      | 9.6% |
-
-**Headline insight:** A VaR model calibrated on calm 2024 data understates
-cedi tail risk by ~2.5x during a depreciation shock. The model fails the
-Kupiec POF test outright on 2022 data (9 breaches vs. 2.5 expected).
+| Position | USD 20,000,000 @ 12.50 |
+| Position value | GHS 250,000,000 |
+| Daily volatility | 1.20% |
+| **Parametric VaR (99%, 1-day)** | **GHS 6,978,961** |
+| Expected Shortfall | GHS 7,999,282 |
+| 10-day Basel VaR | GHS 22,067,947 |
 
 ---
 
-## Installation
+## Real-Data Calibration — Key Results
 
-```bash
-git clone https://github.com/YOUR-USERNAME/ghana-fx-var.git
-cd ghana-fx-var
-pip install -r requirements.txt
-```
+Calibrated against Bank of Ghana USD/GHS data, 2015-01-01 to 2025-12-31:
 
-### Requirements
+| Metric | Value |
+|---|---|
+| Observations | 2,725 |
+| Latest USD/GHS | 10.45 |
+| Position value | GHS 209,000,000 |
+| Realised daily volatility | 0.7735% |
+| Realised annual volatility | 12.28% |
+| **Kurtosis** | **147.78** (normal = 0) |
+| Skewness | −1.84 |
+| Worst single day | −15.04% |
 
-- Python 3.8+
-- `numpy`
-- `scipy`
+### Real-Data VaR (99%, 1-day)
+
+| Method | VaR (GHS) | ES (GHS) |
+|---|---|---|
+| Parametric | 3,760,816 | 4,308,633 |
+| Historical | 3,951,268 | 9,229,126 |
+| **Ratio (Hist / Param)** | **1.05×** | **2.14×** |
+
+### Real-Data Kupiec Backtest
+
+| Item | Value |
+|---|---|
+| Backtest window | Rolling 250-day |
+| Observations | 2,475 |
+| Expected breaches | 24.75 |
+| **Observed breaches** | **60** |
+| **LR statistic** | **36.27** |
+| Critical value (95%) | 3.84 |
+| **Verdict** | **REJECTED** |
+
+**The parametric model fails the Kupiec backtest outright.** This is
+the central finding of the project.
+
+### Real-Data Volatility Regimes
+
+| Year | Daily vol | Annual vol | VaR (GHS) |
+|---|---|---|---|
+| 2015 | 0.8535% | 13.55% | 4,149,900 |
+| 2016 | 0.1596% | 2.53% | 775,935 |
+| 2017 | 0.3070% | 4.87% | 1,492,586 |
+| 2018 | 0.1492% | 2.37% | 725,510 |
+| 2019 | 0.2546% | 4.04% | 1,237,767 |
+| 2020 | 0.1497% | 2.38% | 727,672 |
+| 2021 | 0.0552% | 0.88% | 268,605 |
+| **2022** | **1.9397%** | **30.79%** | **9,430,984** |
+| 2023 | 0.9332% | 14.81% | 4,537,446 |
+| 2024 | 0.3003% | 4.77% | 1,460,052 |
+| 2025 | 0.9400% | 14.92% | 4,570,294 |
+
+**Range: 0.88% to 30.79% annualised — a 35× spread.**
 
 ---
 
-## Usage
+## The Comparison — What the Two Calibrations Teach Us
 
-```bash
-python src/ghana_fx_var.py
-```
+| Question | Illustrative | Real-Data |
+|---|---|---|
+| Assumed volatility | 1.20% / day | 0.77% / day |
+| VaR (99%, 1-day) | GHS 6.98m | GHS 3.76m |
+| Fat tails captured? | No (assumed normal) | Yes (kurtosis 148) |
+| Kupiec verdict | N/A | **REJECTED** |
+| Model survives? | Unknown | **No** |
 
-The script prompts for:
-
-- Currency pair (e.g. `USD/GHS`)
-- Spot rate
-- Position size (base currency)
-- Daily volatility (%)
-- Confidence level (%)
-
-It then reports:
-
-1. 1-day and 10-day VaR
-2. Expected Shortfall
-3. Stress-test results across Ghanaian volatility regimes (2022 / 2023 / 2024)
-4. Kupiec backtest on three GHS market windows
-5. Multi-currency portfolio VaR and diversification benefit
-
-### Sample run
-
-```
---- SINGLE-POSITION VaR ---
-   1-day VaR (99%) : GHS       6,979,043.62
-  10-day VaR (99%) : GHS      22,069,673.74
-   ES   1-day (99%) : GHS       7,995,642.66
-
---- CRISIS REGIME STRESS (Ghana 2022) ---
-       calm_2024 (vol 1.13%): VaR = GHS    6,594,576.36
-     adjust_2023 (vol 1.76%): VaR = GHS   10,258,229.90
-     crisis_2022 (vol 2.83%): VaR = GHS   16,486,440.90
-
---- KUPIEC BACKTEST (illustrative GHS windows) ---
-       Calm 2024:  2 breaches, LR =  0.108  -> ACCEPTED
-     Adjust 2023:  4 breaches, LR =  0.769  -> ACCEPTED
-     Crisis 2022:  9 breaches, LR = 10.229  -> REJECTED
-
---- MULTI-CURRENCY PORTFOLIO VaR (Ghana book) ---
-  Portfolio sigma   : GHS    4,956,165.07
-  Portfolio VaR 99% : GHS   11,529,764.09
-  Sum of standalone : GHS   12,756,528.57
-  Diversification   : GHS    1,226,764.48 (9.6%)
-```
+The illustrative case shows the **mechanics**. The real-data case shows
+the **failure mode**.
 
 ---
 
 ## Methodology
 
 ### Parametric VaR
-
 ```
-VaR = V * sigma * z_alpha
+VaR = V × σ × z_α
 ```
-
-Where `V` is position value in GHS, `sigma` is daily volatility, and
-`z_alpha` is the standard normal quantile at the chosen confidence level.
 
 ### Expected Shortfall (normal case)
-
 ```
-ES = V * sigma * phi(z_alpha) / (1 - alpha)
+ES = V × σ × φ(z_α) / (1 − α)
+```
+
+### Historical Simulation VaR
+```
+VaR = empirical quantile of (−returns × V) at level α
 ```
 
 ### Kupiec POF statistic
-
 ```
-LR_POF = -2 ln [ (1-p)^(n-x) p^x / ((1-x/n)^(n-x) (x/n)^x) ]  ~ chi2(1)
+LR = −2 ln [ (1−p)^(n−x) p^x / ((1−x/n)^(n−x) (x/n)^x) ]  ~ χ²(1)
 ```
-
-Where `p = 1 - alpha` (expected breach rate) and `x` is observed breaches.
+where `p = 1 − α` (expected breach rate).
 
 ### Portfolio VaR
-
 ```
-sigma_P = sqrt(w.T * Sigma * w)
-VaR_P   = z_alpha * sigma_P
+σ_P = sqrt(wᵀ Σ w)
+VaR_P = z_α × σ_P
 ```
 
 ---
 
-## Ghana Market Context
+## Installation
 
-| Period | Annual vol | Daily vol | Context |
-|---|---|---|---|
-| 2019 | 8%  | 0.50% | Pre-COVID stability |
-| 2020 | 15% | 0.95% | Pandemic shock |
-| 2022 | 45% | 2.83% | Cedi depreciation, IMF programme |
-| 2023 | 28% | 1.76% | Post-restructuring |
-| 2024 | 18% | 1.13% | Stabilisation, BoG tightening |
+```bash
+git clone https://github.com/DanielAgyekumAmakyeGh/ghana-fx-var.git
+cd ghana-fx-var
+pip install -r requirements.txt
+```
 
-Structural features of the USD/GHS market:
+## Usage
 
-- Thin interbank liquidity — spreads widen 10x under stress
-- Bank of Ghana intervention via FX auctions
-- High correlation across GHS crosses (common cedi factor)
-- Fat-tailed returns (kurtosis well above 3)
+### Illustrative engine
+```bash
+python src/ghana_fx_var.py
+```
 
----
-
-## Regulatory Framework
-
-- **Basel III** Internal Models Approach (IMA)
-- **Bank of Ghana** minimum CAR: 13% (above Basel III's 8%)
-- **BoG reporting:** FX Position Return (daily), Market Risk Return (monthly),
-  CAR Return BSD 4 (monthly), ICAAP (annual)
+### Real-data engine
+```bash
+python src/load_bog_data.py    # clean the raw BoG data
+python src/var_real_data.py    # run the VaR analysis
+```
 
 ---
 
 ## Data & Assumptions
 
-This is a **case study**, not a production risk system.
+### Illustrative engine
+- The bank (GCIB) is fictional
+- Volatility, spot, and correlations are illustrative
+- Purpose: demonstrate the mechanics cleanly
 
-- **The bank (GCIB) is fictional.**
-- Volatility figures, correlations, and spot rates reflect publicly observable
-  behaviour of the USD/GHS pair (Bank of Ghana publications, 2019-2024) and
-  are rounded for illustration.
-- The purpose is to demonstrate **method** — VaR construction, ES, Kupiec
-  backtesting, portfolio aggregation, and Basel III / BoG capital mapping —
-  not to publish a live risk number.
+### Real-data engine
+- **Source:** Bank of Ghana interbank FX rates
+- **Range:** 2015-01-01 to 2025-12-31
+- **Observations:** 2,725 daily mid rates
+- **Raw file:** `data/usd_ghs_rates.csv`
+- **Cleaned file:** `data/usd_ghs_clean.csv`
 
-### Replacing with real data
-
-1. Download USD/GHS daily rates from the Bank of Ghana or a market data provider.
-2. Replace the volatility input with the realised standard deviation of log returns.
-3. Rerun the script — the framework is data-source agnostic.
+Both engines use the same methodology. Only the calibration differs.
 
 ---
 
 ## Limitations
 
-- Normality assumed — GHS returns exhibit fat tails
+- Normality assumed in the parametric model — falsified by the
+  kurtosis of 147.78
 - Constant volatility — no GARCH clustering
-- Linear positions — no options/convexity
+- Linear positions — no options / convexity
 - Square-root-of-time scaling assumes i.i.d. returns
-- Liquidity assumed sufficient at market prices
-- Illustrative rather than live data
+- Fat tails break the Kupiec test — this is the central finding,
+  not a bug
 
 ---
 
@@ -205,12 +211,16 @@ This is a **case study**, not a production risk system.
 ```
 ghana-fx-var/
 ├── src/
-│   └── ghana_fx_var.py        # main VaR engine
+│   ├── ghana_fx_var.py          # illustrative engine
+│   ├── load_bog_data.py         # BoG data loader
+│   └── var_real_data.py         # real-data VaR engine
 ├── data/
-│   └── README.md              # data sources and assumptions
+│   ├── README.md
+│   ├── usd_ghs_rates.csv        # raw BoG data
+│   └── usd_ghs_clean.csv        # cleaned
 ├── examples/
-│   └── sample_output.txt      # sample console output
-├── docs/                      # (optional) LaTeX report
+│   ├── sample_output.txt        # illustrative output
+│   └── real_data_output.txt     # real-data output
 ├── requirements.txt
 ├── LICENSE
 ├── .gitignore
@@ -223,9 +233,8 @@ ghana-fx-var/
 
 MIT License — see `LICENSE` for details.
 
----
 ## Contact
 
 **Daniel Agyekum Amakye**
 Quantitative Analyst — Risk Management
-📧 janetobosuayaa@gmail.com
+Email: janetobosuayaa@gmail.com

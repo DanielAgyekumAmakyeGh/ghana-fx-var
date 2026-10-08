@@ -1,0 +1,56 @@
+C:\Users\USER\ghana-fx-var>python src\var_real_data.py
+========================================================================
+GCIB | Real-Data FX VaR Engine - Bank of Ghana USD/GHS
+========================================================================
+Data range         : 2015-01-02 to 2025-12-31
+Observations       : 2725
+Latest USD/GHS     : 10.4500
+Position           : USD 20,000,000
+Position value     : GHS 209,000,000.00
+
+--- FULL-SAMPLE (2015-2025) ---
+Realised daily vol : 0.7735%
+Realised annual vol: 12.2790%
+Kurtosis           : 147.7756  (normal = 0)
+
+Parametric VaR 99% : GHS    3,760,815.53
+Parametric ES  99% : GHS    4,308,632.92
+Historical VaR 99% : GHS    3,951,268.46
+Historical ES  99% : GHS    9,229,125.87
+Parametric vs Hist.: 0.952x
+
+--- REGIME-CONDITIONAL VaR (99%, 1-day) ---
+Year   Days   Daily vol    VaR (GHS)          ES (GHS)
+------------------------------------------------------------------------
+2015   247      0.8535%       4,149,899.99       4,754,393.19
+2016   248      0.1596%         775,935.00         888,961.20
+2017   247      0.3070%       1,492,586.33       1,710,003.20
+2018   248      0.1492%         725,509.70         831,190.72
+2019   248      0.2546%       1,237,766.68       1,418,065.37
+2020   249      0.1497%         727,672.36         833,668.40
+2021   248      0.0552%         268,605.22         307,731.47
+2022   247      1.9397%       9,430,984.13      10,804,743.90
+2023   247      0.9332%       4,537,446.11       5,198,391.02
+2024   249      0.3003%       1,460,051.84       1,672,729.59
+2025   247      0.9400%       4,570,294.34       5,236,024.07
+
+--- KUPIEC BACKTEST (rolling 250-day window, 99%) ---
+Backtest window    : rolling 250 days
+Observations       : 2475
+Expected breaches  : 24.75
+Observed breaches  : 60
+Breach rate        : 2.424%
+LR statistic       : 36.2719
+Critical (95%)     : 3.8415
+Verdict            : REJECTED
+
+--- STRESS: 2022 crisis volatility applied to today ---
+2022 daily vol     : 1.9397%
+Stressed VaR 99%   : GHS    9,430,984.13
+Stressed ES  99%   : GHS   10,804,743.90
+Stress / calm ratio: 2.51x
+========================================================================
+
+C:\Users\USER\ghana-fx-var>notepad examples\real_data_output.txt
+
+C:\Users\USER\ghana-fx-var>
