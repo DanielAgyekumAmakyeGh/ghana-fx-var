@@ -1,0 +1,675 @@
+\documentclass[11pt,a4paper]{article}
+
+% ---------- Packages ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{ragged2e}
+\usepackage{pgfplots}
+\usepackage{listings}
+\usepackage{tcolorbox}
+\usepackage{longtable}
+\usepackage{siunitx}
+\pgfplotsset{compat=1.18}
+\tcbuselibrary{listings,skins}
+\sisetup{group-separator={,},group-minimum-digits=4}
+
+% ---------- Colors ----------
+\definecolor{gcibblue}{RGB}{12,45,90}
+\definecolor{gcibgold}{RGB}{180,140,30}
+\definecolor{ghred}{RGB}{140,20,20}
+\definecolor{ghgold}{RGB}{200,160,40}
+\definecolor{ghgreen}{RGB}{0,100,50}
+\definecolor{codebg}{RGB}{247,247,250}
+\definecolor{codekw}{RGB}{0,90,160}
+\definecolor{codestr}{RGB}{160,60,20}
+\definecolor{codecom}{RGB}{90,120,90}
+
+% ---------- Author metadata ----------
+\newcommand{\authorname}{Daniel Agyekum Amakye}
+\newcommand{\authortitle}{Quantitative Analyst --- Risk Management}
+\newcommand{\authordesk}{Quantitative Risk \& Financial Engineering}
+\newcommand{\authoremail}{janetobosuayaa@gmail.com}
+\newcommand{\reporef}{github.com/DanielAgyekumAmakyeGh/ghana-fx-var}
+
+% ---------- Hyperref ----------
+\hypersetup{
+    colorlinks=true, linkcolor=gcibblue,
+    urlcolor=gcibblue, citecolor=gcibblue,
+    pdftitle={Ghana FX VaR: Illustrative vs. Real-Data Calibration},
+    pdfauthor={\authorname},
+    pdfsubject={USD/GHS Value-at-Risk under Basel III / Bank of Ghana framework}
+}
+
+% ---------- Section formatting ----------
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{gcibblue}}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{gcibblue}}{\thesubsection}{1em}{}
+
+% ---------- Header / Footer ----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{gcibblue}\textbf{GCIB} \;|\; \authordesk}
+\fancyhead[R]{\small\color{gcibblue}Ghana Market Risk Report}
+\fancyfoot[L]{\small\color{gcibblue}\authorname}
+\fancyfoot[C]{\small\thepage}
+\fancyfoot[R]{\small\color{gcibblue}\authortitle}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% ---------- Custom commands ----------
+\newcommand{\ghs}[1]{\textnormal{GH₵\,#1}}
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+
+% ---------- Python listing style ----------
+\lstdefinestyle{python}{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{codekw}\bfseries,
+    stringstyle=\color{codestr},
+    commentstyle=\color{codecom}\itshape,
+    numbers=left, numberstyle=\tiny\color{gray}, numbersep=8pt,
+    frame=single, rulecolor=\color{gcibblue!40},
+    showstringspaces=false, breaklines=true, tabsize=4, captionpos=b
+}
+
+% ============================================================
+\begin{document}
+
+% ---------- Title Page ----------
+\begin{titlepage}
+    \centering
+    \vspace*{1.2cm}
+    {\color{gcibblue}\rule{\textwidth}{1.5pt}}\\[0.4cm]
+    {\Huge\bfseries\color{gcibblue} Ghana Commercial \& Investment Bank}\\[0.3cm]
+    {\Large\color{gcibgold} Quantitative Risk \& Financial Engineering}\\[0.2cm]
+    {\color{gcibblue}\rule{\textwidth}{1.5pt}}\\[1.2cm]
+
+    {\Huge\bfseries Ghana Market Risk Report}\\[0.5cm]
+    {\LARGE FX Value-at-Risk: Illustrative vs.\ Real-Data Calibration}\\[0.3cm]
+    {\large USD/GHS Position --- Basel III / Bank of Ghana Framework}\\[1.4cm]
+
+    \begin{tcolorbox}[
+        width=0.82\textwidth,
+        colback=codebg,
+        colframe=gcibblue,
+        boxrule=1pt, arc=3pt,
+        left=14pt, right=14pt, top=10pt, bottom=10pt
+    ]
+        \centering
+        {\large\bfseries\color{gcibblue} Prepared by}\\[0.35cm]
+        {\Large\bfseries \authorname}\\[0.25cm]
+        {\color{gcibgold}\rule{6cm}{0.6pt}}\\[0.25cm]
+        {\large \authortitle}\\[0.15cm]
+        {\itshape \authordesk}\\[0.35cm]
+        {\small \authoremail}
+    \end{tcolorbox}
+
+    \vspace{1.0cm}
+
+    \begin{tabular}{rl}
+        \textbf{Desk:}          & Market Risk \\[0.2cm]
+        \textbf{Requested by:}  & Treasury / ALM \\[0.2cm]
+        \textbf{Regulator:}     & Bank of Ghana (BoG) \\[0.2cm]
+        \textbf{Classification:} & Internal --- Restricted \\[0.2cm]
+        \textbf{Report Ref:}    & GCIB/MR/FX/2025/002 \\[0.2cm]
+        \textbf{Repository:}    & \texttt{\reporef} \\[0.2cm]
+        \textbf{Date:}          & \today \\
+    \end{tabular}
+
+    \vfill
+    {\small\itshape Prepared under the Bank of Ghana's Risk Management Directive and Basel II/III Capital Adequacy framework.}
+\end{titlepage}
+
+% ---------- Executive Summary ----------
+\section{Executive Summary}
+
+This report presents a dual-calibration FX Value-at-Risk (VaR) analysis
+for a USD~20 million position at GCIB. Two complementary engines are
+developed:
+
+\begin{enumerate}[leftmargin=1.6em]
+    \item An \textbf{illustrative engine} using a controlled parameter
+          set (spot 12.50, volatility 1.20\%/day) to demonstrate the
+          mechanics of parametric VaR, Expected Shortfall, Kupiec
+          backtesting, and portfolio VaR.
+    \item A \textbf{real-data engine} calibrated against 2{,}725 daily
+          observations of the Bank of Ghana USD/GHS reference rate
+          (2015--2025) to test whether the framework survives real
+          Ghanaian market conditions.
+\end{enumerate}
+
+\noindent\textbf{Headline finding.} The parametric VaR model \emph{fails
+the Kupiec Proportion-of-Failures test outright} on real data: 60 breaches
+against 24.75 expected over 2{,}475 rolling 250-day windows
+(\(LR = 36.27\) against a \(\chi^2_{1,0.95}\) critical value of 3.84).
+The parametric assumption understates Expected Shortfall by a factor of
+2.14\(\times\) relative to the empirical tail. The bank is fictional; the
+methodology and the failure mode are real.
+
+% ---------- Section 2 ----------
+\section{Problem Statement}
+
+\noindent\textbf{Requesting unit:} Treasury / ALM
+
+\begin{quote}
+\itshape
+``We have a USD 20 million FX position. What is our potential loss tomorrow?''
+\end{quote}
+
+\noindent The USD/GHS rate is one of the most volatile emerging-market
+pairs in Sub-Saharan Africa. Between 2015 and 2025, the cedi ranged from
+3.20 to 16.42 against the dollar, with annualised volatility varying
+across regimes from 0.88\% (2021) to 30.79\% (2022) --- a 35\(\times\)
+spread. A robust VaR framework must both \emph{measure} this risk and be
+\emph{validated} against real data.
+
+% ---------- Section 3 ----------
+\section{Methodology}
+
+Both engines share the same core methodology. Only the calibration differs.
+
+\subsection{Parametric VaR}
+\begin{equation}
+\text{VaR}_{1d} = V \times \sigma \times z_{\alpha}
+\end{equation}
+
+\subsection{Expected Shortfall (normal case)}
+\begin{equation}
+\text{ES}_{1d} = V \times \sigma \times \frac{\phi(z_{\alpha})}{1-\alpha}
+\end{equation}
+
+\subsection{Historical Simulation VaR}
+\begin{equation}
+\text{VaR}^{\text{hist}} = \text{quantile}_{1-\alpha}\!\left(-r_t \cdot V\right)
+\end{equation}
+
+\subsection{GARCH(1,1)}
+\begin{equation}
+\sigma_t^2 = \omega + \alpha_1 \varepsilon_{t-1}^2 + \beta_1 \sigma_{t-1}^2
+\end{equation}
+with Student-\(t\) errors to capture fat tails.
+
+\subsection{Kupiec Proportion-of-Failures}
+\begin{equation}
+LR_{POF} = -2 \ln\!\left[
+\frac{(1-p)^{n-x} p^{x}}
+     {\left(1-\tfrac{x}{n}\right)^{n-x} \left(\tfrac{x}{n}\right)^{x}}
+\right] \sim \chi^2_1
+\end{equation}
+where \(p = 1-\alpha\) is the expected breach rate and \(x\) the observed count.
+
+\subsection{Portfolio VaR}
+\begin{equation}
+\sigma_P = \sqrt{w^\top \Sigma\, w}, \qquad
+\text{VaR}_P = z_\alpha \times \sigma_P
+\end{equation}
+
+% ---------- Section 4 ----------
+\section{Calibration 1: Illustrative Engine}
+
+\subsection{Inputs}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{7cm} L{7cm}}
+\toprule
+\textbf{Input} & \textbf{Value} \\
+\midrule
+Currency pair              & USD/GHS \\
+Spot rate                  & 12.50 \\
+Position (base currency)   & USD 20{,}000{,}000 \\
+Position value             & \ghs{250{,}000{,}000} \\
+Assumed daily volatility   & 1.20\% \\
+Confidence level           & 99\% \\
+Horizon                    & 1 day (Basel: 10 days) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Results}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{7cm} r}
+\toprule
+\textbf{Metric} & \textbf{Value (GHS)} \\
+\midrule
+Parametric VaR (99\%, 1-day)     & 6{,}979{,}044 \\
+Parametric VaR (99\%, 10-day)    & 22{,}069{,}674 \\
+Expected Shortfall (99\%, 1-day) & 7{,}995{,}643 \\
+Portfolio VaR (USD/EUR/GBP)      & 11{,}529{,}764 \\
+Diversification benefit          & 9.6\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The illustrative engine demonstrates the mechanics cleanly but
+rests on a critical assumption: that daily returns are normally distributed
+with constant volatility.
+
+% ---------- Section 5 ----------
+\section{Calibration 2: Real-Data Engine}
+
+\subsection{Data}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{7cm} L{7cm}}
+\toprule
+\textbf{Item} & \textbf{Value} \\
+\midrule
+Source              & Bank of Ghana interbank FX rates \\
+Instrument          & USD/GHS reference rate (mid) \\
+Date range          & 2015-01-02 to 2025-12-31 \\
+Observations        & 2{,}725 daily mid rates \\
+Latest rate         & 10.4500 \\
+Position value      & \ghs{209{,}000{,}000} \\
+Raw file            & \texttt{data/usd\_ghs\_rates.csv} \\
+Cleaned file        & \texttt{data/usd\_ghs\_clean.csv} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Empirical distribution diagnostics}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{7cm} r}
+\toprule
+\textbf{Metric} & \textbf{Value} \\
+\midrule
+Realised daily volatility      & 0.7735\% \\
+Realised annual volatility     & 12.2790\% \\
+Kurtosis                       & \textbf{147.78} (normal = 0) \\
+Skewness                       & $-1.84$ (normal = 0) \\
+Worst single day               & $-15.04\%$ \\
+Best single day                & $+13.34\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Kurtosis of 147.78} is the central empirical fact. Under
+a normal distribution, kurtosis is 0. A kurtosis of 147 implies that
+extreme moves occur with vastly greater frequency than the normal
+distribution allows. This alone predicts that a parametric VaR model
+will fail.
+
+\subsection{VaR estimates: parametric vs.\ historical}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{4cm} r r}
+\toprule
+\textbf{Method} & \textbf{VaR (GHS)} & \textbf{ES (GHS)} \\
+\midrule
+Parametric (full sample)  & 3{,}760{,}816 & 4{,}308{,}633 \\
+Historical (full sample)  & 3{,}951{,}268 & 9{,}229{,}126 \\
+\midrule
+\textbf{Ratio (Hist / Param)} & \textbf{1.05\(\times\)} & \textbf{2.14\(\times\)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The parametric and historical VaR estimates are close
+(1.05\(\times\)), but the ES estimates diverge by 2.14\(\times\). This
+is exactly what fat tails produce: the two methods agree on the body of
+the distribution but the parametric method drastically understates the
+tail.
+
+\subsection{GARCH(1,1) conditional volatility}
+
+The full-sample parametric VaR assumes a single constant volatility.
+In reality, GHS volatility clusters. A GARCH(1,1) model with Student-\(t\)
+errors was fitted to the 2{,}725 daily log returns:
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{4cm} r L{7cm}}
+\toprule
+\textbf{Parameter} & \textbf{Estimate} & \textbf{Interpretation} \\
+\midrule
+$\omega$     & $1.70 \times 10^{-4}$ & Baseline variance \\
+$\alpha_1$   & 0.5287 & Reaction to yesterday's shock (large) \\
+$\beta_1$    & 0.4713 & Volatility persistence (large) \\
+$\alpha_1 + \beta_1$ & \textbf{1.000} & \textbf{IGARCH: shocks are permanent} \\
+$\nu$ (t d.o.f.) & 2.83 & Extreme fat tails (normal is $\infty$) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The sum $\alpha_1 + \beta_1 \approx 1.000$ indicates an
+\textbf{integrated GARCH} process: volatility shocks to the cedi do not
+decay --- they persist. This is consistent with a currency in structural
+depreciation. The Student-\(t\) degrees of freedom of $\nu = 2.83$ confirms
+that the conditional distribution is extremely fat-tailed.
+
+\subsection{GARCH vs.\ parametric VaR}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{6cm} r}
+\toprule
+\textbf{Measure} & \textbf{Value (GHS)} \\
+\midrule
+Full-sample daily volatility (constant) & 0.7735\% \\
+GARCH next-day conditional $\sigma$     & \textbf{1.7909\%} \\
+\midrule
+Parametric VaR (99\%, 1-day)            & 3{,}760{,}816 \\
+\textbf{GARCH VaR (99\%, 1-day)}        & \textbf{8{,}707{,}564} \\
+\midrule
+\textbf{GARCH / Parametric ratio}       & \textbf{2.32\(\times\)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The GARCH conditional VaR is \textbf{2.32\(\times\) the
+parametric VaR}. The constant-volatility assumption materially understates
+risk when the market is already in a stressed regime.
+
+\subsection{Volatility regimes, 2015--2025}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{r r r r}
+\toprule
+\textbf{Year} & \textbf{Daily vol} & \textbf{Annual vol} & \textbf{VaR 99\% 1-day (GHS)} \\
+\midrule
+2015 & 0.8535\% & 13.55\% & 4{,}149{,}900 \\
+2016 & 0.1596\% &  2.53\% &   775{,}935 \\
+2017 & 0.3070\% &  4.87\% & 1{,}492{,}586 \\
+2018 & 0.1492\% &  2.37\% &   725{,}510 \\
+2019 & 0.2546\% &  4.04\% & 1{,}237{,}767 \\
+2020 & 0.1497\% &  2.38\% &   727{,}672 \\
+2021 & 0.0552\% &  0.88\% &   268{,}605 \\
+\textbf{2022} & \textbf{1.9397\%} & \textbf{30.79\%} & \textbf{9{,}430{,}984} \\
+2023 & 0.9332\% & 14.81\% & 4{,}537{,}446 \\
+2024 & 0.3003\% &  4.77\% & 1{,}460{,}052 \\
+2025 & 0.9400\% & 14.92\% & 4{,}570{,}294 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textbf{35\(\times\) spread.} A VaR model calibrated on the
+2021 regime (0.88\% annual) would have understated 2022 crisis risk by
+a factor of 35. This is the primary justification for stress testing,
+GARCH-based volatility models, and regime-conditional capital buffers.
+
+\subsection{Two historical VaR windows, both reported}
+
+The framework deliberately reports two historical VaR measures:
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{6cm} r}
+\toprule
+\textbf{Window} & \textbf{Historical VaR (GHS)} \\
+\midrule
+Full-sample (2{,}725 days)  & 3{,}951{,}268 \\
+Rolling 250-day             & 9{,}581{,}018 \\
+\midrule
+\textbf{Recency uplift}     & \textbf{2.43\(\times\)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Both are correct. The full-sample figure is the long-run,
+unconditional estimate used for capital planning and IMA regulatory
+purposes. The rolling 250-day figure is the recent conditional estimate
+used for daily limit monitoring. The recency uplift of \(2.43\times\)
+reflects elevated 2025 volatility relative to the 10-year average. The
+framework never presents either number in isolation.
+
+\subsection{Kupiec backtest}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{7cm} r}
+\toprule
+\textbf{Item} & \textbf{Value} \\
+\midrule
+Backtest window                & Rolling 250-day \\
+Observations                   & 2{,}475 \\
+Expected breaches              & 24.75 \\
+\textbf{Observed breaches}     & \textbf{60} \\
+Breach rate                    & 2.424\% \\
+\(LR\) statistic               & \textbf{36.27} \\
+Critical value \(\chi^2_{1,0.95}\) & 3.84 \\
+\textbf{Verdict}               & \textbf{REJECTED} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The parametric model is rejected at the 95\% test level.
+The observed breach rate (2.42\%) is 2.42\(\times\) the expected rate
+(1.00\%). This is not a coding error; it is the correct verdict for a
+normal-distribution model applied to a kurtosis-147 return series.
+
+% ---------- Section 6 ----------
+\section{Comparison of the Two Calibrations}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{5cm} r r}
+\toprule
+\textbf{Metric} & \textbf{Illustrative} & \textbf{Real Data} \\
+\midrule
+Position value                 & \ghs{250{,}000{,}000} & \ghs{209{,}000{,}000} \\
+Assumed / realised daily vol   & 1.20\% & 0.7735\% \\
+Parametric VaR (99\%, 1-day)   & 6{,}979{,}044 & 3{,}760{,}816 \\
+Expected Shortfall             & 7{,}995{,}643 & 4{,}308{,}633 \\
+Fat tails captured?            & No     & Yes (kurtosis 147.78) \\
+Kupiec verdict                 & N/A    & \textbf{REJECTED} \\
+Model survives?                & Unknown & \textbf{No} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textbf{What the comparison teaches.} The illustrative engine
+shows \emph{how} to compute a VaR. The real-data engine shows
+\emph{when the underlying assumptions break}. In a production risk
+function at a Ghanaian bank, the parametric engine would be a first pass
+only --- the operative measures would be historical simulation, Expected
+Shortfall, GARCH, and stress testing.
+
+% ---------- Section 7 ----------
+\section{Stress Testing}
+
+\subsection{Backward-Looking: 2022 Crisis Replay}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{7cm} r}
+\toprule
+\textbf{Scenario} & \textbf{Value (GHS)} \\
+\midrule
+2022 daily volatility       & 1.9397\% \\
+Stressed VaR (99\%, 1-day)  & 9{,}430{,}984 \\
+Stressed ES (99\%, 1-day)   & 10{,}804{,}744 \\
+Stress / full-sample ratio  & \textbf{2.51\(\times\)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Forward-Looking: Overnight Depreciation Scenarios}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{r r r r}
+\toprule
+\textbf{Shock} & \textbf{Shocked USD/GHS} & \textbf{Revaluation (GHS)} & \textbf{\% of Position} \\
+\midrule
+10\% & 11.4950 & 20{,}900{,}000 & 10.00\% \\
+20\% & 12.5400 & 41{,}800{,}000 & 20.00\% \\
+\textbf{30\%} & \textbf{13.5850} & \textbf{62{,}700{,}000} & \textbf{30.00\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The 30\% scenario corresponds to the scale of the 2022 cedi
+depreciation within a single day. For a bank funding a USD 20m long
+position in GHS, the funding side would carry a GH₵62.7m loss. This is
+the ALCO stress scenario recommended in Section~9.
+
+% ---------- Section 8 ----------
+\section{Ghana Regulatory Implications}
+
+\subsection{Basel III / BoG capital charge}
+\begin{equation}
+\text{Capital Charge} = \max\!\left(\text{VaR}_{t-1},\;
+m_c \cdot \text{VaR}_{avg,60}\right) + \text{SVaR}
+\end{equation}
+with \(m_c \geq 3\) and BoG's minimum CAR of 13\%.
+
+\subsection{Backtesting consequences}
+
+Under the Basel traffic-light framework:
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{3cm} L{5cm} L{5cm}}
+\toprule
+\textbf{Zone} & \textbf{Breach range} & \textbf{Capital consequence} \\
+\midrule
+\textcolor{ghgreen}{\textbf{Green}}  & 0--4   & Multiplier stays at 3.0 \\
+\textcolor{ghgold}{\textbf{Yellow}}  & 5--9   & Multiplier rises to 3.4--3.85 \\
+\textcolor{ghred}{\textbf{Red}}      & 10+    & Model rejected; BoG intervention \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent A real-data breach count of 60 over 2{,}475 rolling windows
+corresponds to a rolling 250-day breach count of \(\approx 6\)---placing
+the parametric model in the \textbf{yellow zone} and increasing the
+regulatory capital multiplier.
+
+% ---------- Section 9 ----------
+\section{Recommendations}
+
+\begin{enumerate}[leftmargin=1.6em]
+    \item Migrate from parametric to \textbf{historical simulation} as
+          the primary daily VaR measure for the FX book.
+    \item Report \textbf{Expected Shortfall} alongside VaR; the empirical
+          ES is 2.14\(\times\) the parametric ES.
+    \item Adopt a \textbf{GARCH(1,1)} volatility model to capture the
+          IGARCH persistence observed in the data.
+    \item Extend stress testing to include a \textbf{30\% overnight GHS
+          depreciation} scenario for ALCO.
+    \item Present this dual-calibration framework to the model validation
+          committee for review.
+    \item Publish the analysis openly (\texttt{\reporef}) as a
+          contribution to Ghanaian quantitative finance.
+\end{enumerate}
+
+% ---------- Section 10 ----------
+\section{Key Assumptions and Limitations}
+
+\begin{enumerate}[leftmargin=1.6em]
+    \item \textbf{Normality.} Assumed in the parametric engine; falsified
+          by the real-data kurtosis of 147.78.
+    \item \textbf{Constant volatility.} The parametric model assumes it;
+          GARCH shows $\alpha_1 + \beta_1 = 1.000$ (integrated).
+    \item \textbf{Linear positions.} No optionality or convexity.
+    \item \textbf{Square-root-of-time scaling.} Assumes i.i.d.\ returns;
+          GHS autocorrelation mildly violates this.
+    \item \textbf{Liquidity.} Model assumes exit at market prices; GHS
+          interbank liquidity can disappear under stress.
+    \item \textbf{Illustrative bank.} GCIB is fictional; only the
+          methodology and the data are real.
+\end{enumerate}
+
+% ---------- Appendix ----------
+\appendix
+\section{Companion Repository}
+
+All source code, data, and outputs are maintained at:
+
+\begin{center}
+\texttt{\reporef}
+\end{center}
+
+\subsection*{Repository contents}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{6cm} L{8cm}}
+\toprule
+\textbf{File / Directory} & \textbf{Purpose} \\
+\midrule
+\texttt{src/ghana\_fx\_var.py}          & Illustrative VaR engine \\
+\texttt{src/load\_bog\_data.py}         & BoG CSV loader and diagnostics \\
+\texttt{src/var\_real\_data.py}         & Real-data VaR engine \\
+\texttt{src/garch\_var.py}              & GARCH(1,1) conditional VaR \\
+\texttt{src/daily\_risk\_report.py}     & Daily risk report (historical primary) \\
+\texttt{data/usd\_ghs\_rates.csv}       & Raw BoG interbank rates (2015--2025) \\
+\texttt{data/usd\_ghs\_clean.csv}       & Cleaned series with log returns \\
+\texttt{docs/Model\_Validation\_Memo.tex} & Model validation memo \\
+\texttt{examples/}                      & Terminal outputs for all engines \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{Author}
+
+\textbf{\authorname}\\
+\authortitle\\
+\authordesk\\
+\texttt{\authoremail}
+
+% ---------- Sign-off ----------
+\vspace{0.8cm}
+\noindent\rule{\textwidth}{0.4pt}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{L{5cm} L{4cm} L{5cm}}
+\toprule
+\textbf{Role} & \textbf{Name} & \textbf{Signature / Date} \\
+\midrule
+Prepared by (Quant Analyst)     & \textbf{\authorname} &  \\
+Reviewed by (Head of Market Risk) &  &  \\
+Approved by (CRO)               &  &  \\
+Filed with Bank of Ghana        &  &  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vfill
+\begin{center}
+\small\itshape
+--- End of Report ---\\
+Ghana Commercial \& Investment Bank \;|\; Quantitative Risk \& Financial Engineering\\
+Prepared under Bank of Ghana Risk Management Directive\\[0.3cm]
+\textbf{\authorname} \;|\; \authortitle
+\end{center}
+
+\end{document}

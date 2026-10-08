@@ -1,0 +1,27 @@
+--- INPUTS (Ghana FX Desk) ---
+  Currency pair (default USD/GHS):
+  Spot rate (USD/GHS)     : 12.50
+  Position (base ccy)   : 20000000
+  Daily vol (%)         : 1.2
+  Confidence level (%)  : 99
+
+--- SINGLE-POSITION VaR ---
+   1-day VaR (99%) : GHS       6,979,043.62
+  10-day VaR (99%) : GHS      22,069,673.74
+  ES   1-day (99%) : GHS       7,995,642.66
+
+--- CRISIS REGIME STRESS (Ghana 2022) ---
+       calm_2024 (vol 1.13%): VaR = GHS    6,594,576.36
+     adjust_2023 (vol 1.76%): VaR = GHS   10,258,229.90
+     crisis_2022 (vol 2.83%): VaR = GHS   16,486,440.90
+
+--- KUPIEC BACKTEST (illustrative GHS windows) ---
+       Calm 2024:  2 breaches, LR =  0.108  -> ACCEPTED
+     Adjust 2023:  4 breaches, LR =  0.769  -> ACCEPTED
+     Crisis 2022:  9 breaches, LR = 10.229  -> REJECTED
+
+--- MULTI-CURRENCY PORTFOLIO VaR (Ghana book) ---
+  Portfolio sigma   : GHS    4,956,165.07
+  Portfolio VaR 99% : GHS   11,529,764.09
+  Sum of standalone : GHS   12,756,528.57
+  Diversification   : GHS    1,226,764.48 (9.6%)

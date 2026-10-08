@@ -1,0 +1,118 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{booktabs,array,tabularx}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{parskip}
+
+\definecolor{gcibblue}{RGB}{12,45,90}
+
+\titleformat{\section}{\normalfont\large\bfseries\color{gcibblue}}{\thesection}{1em}{}
+
+\title{\vspace{-1.5cm}\textbf{Model Validation Memo}\\[0.3em]
+\large FX Value-at-Risk Framework (GCIB/MR/FX/2025/002)}
+\author{Daniel Agyekum Amakye \\ \small Quantitative Analyst --- Risk Management}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Purpose}
+
+This memo requests review by the Model Validation Committee of the
+FX VaR framework developed for the USD/GHS book. The framework comprises
+four engines:
+
+\begin{enumerate}
+  \item Parametric VaR (variance-covariance, normal assumption)
+  \item Historical simulation VaR (empirical distribution)
+  \item GARCH(1,1) conditional VaR (Student-$t$ errors)
+  \item Daily FX risk report (historical simulation as primary)
+\end{enumerate}
+
+\section*{Data}
+
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+Source & Bank of Ghana interbank FX rates \\
+Instrument & USD/GHS reference rate (mid) \\
+Period & 2015-01-02 to 2025-12-31 \\
+Observations & 2{,}725 daily returns \\
+\bottomrule
+\end{tabularx}
+
+\section*{Findings}
+
+\subsection*{F1 --- Non-normality is definitive}
+
+Kurtosis of 147.78 (normal = 0) rejects the normal assumption at any
+realistic significance level. Skewness of $-1.84$ indicates asymmetric
+tail risk.
+
+\subsection*{F2 --- Parametric VaR fails Kupiec}
+
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+Observations (rolling 250-day) & 2{,}475 \\
+Expected breaches (1\%) & 24.75 \\
+Observed breaches & \textbf{60} \\
+$LR$ statistic & \textbf{36.27} \\
+Critical value ($\chi^2_{1,0.95}$) & 3.84 \\
+Verdict & \textbf{REJECTED} \\
+\bottomrule
+\end{tabularx}
+
+\subsection*{F3 --- Expected Shortfall divergence}
+
+Historical ES is $2.14\times$ the parametric ES on the same sample.
+The parametric engine materially understates tail loss.
+
+\subsection*{F4 --- GARCH confirms IGARCH regime}
+
+$\alpha_1 + \beta_1 = 1.000$ indicates integrated GARCH: volatility
+shocks to the cedi do not decay. GARCH conditional VaR is $2.32\times$
+the full-sample parametric VaR.
+
+\subsection*{F5 --- Two historical VaR windows, both reported}
+
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+Full-sample VaR (2{,}725 days) & GH₵3{,}951{,}268 \\
+Rolling 250-day VaR & GH₵9{,}581{,}018 \\
+Recency uplift & 2.43\(\times\) \\
+\bottomrule
+\end{tabularx}
+
+Both numbers are correct and both are always shown together. The
+full-sample figure is the long-run, unconditional estimate used for
+capital planning; the rolling 250-day figure is the recent conditional
+estimate used for daily limit monitoring. The framework never presents
+either number in isolation.
+
+\section*{Request}
+
+The Committee is asked to:
+
+\begin{enumerate}
+  \item Endorse historical simulation as the primary daily VaR measure.
+  \item Require Expected Shortfall reporting alongside VaR.
+  \item Approve the GARCH(1,1) model as a secondary conditional measure.
+  \item Note the parametric engine's rejection for internal use.
+  \item Approve the daily risk report format for Treasury and ALCO.
+\end{enumerate}
+
+\section*{Limitations}
+
+This analysis is based on a fictional bank (GCIB). The data is real.
+All code and data are publicly available at
+\url{https://github.com/DanielAgyekumAmakyeGh/ghana-fx-var}.
+
+\vspace{1.5cm}
+\noindent\rule{\textwidth}{0.4pt}
+
+\noindent\textbf{Prepared by:} Daniel Agyekum Amakye \\
+\textbf{Role:} Quantitative Analyst --- Risk Management \\
+\textbf{Date:} \today
+
+\end{document}

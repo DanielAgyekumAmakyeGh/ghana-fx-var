@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+authors:
+  - family-names: Amakye
+    given-names: Daniel Agyekum
+    email: janetobosuayaa@gmail.com
+title: "Ghana FX Value-at-Risk: Illustrative vs. Real-Data Calibration"
+version: 1.0.0
+date-released: 2026-10-08
+url: "https://github.com/DanielAgyekumAmakyeGh/ghana-fx-var"
+license: MIT
+abstract: >-
+  A dual-calibration FX VaR analysis comparing a fictional illustrative
+  case with a real-data calibration on 10 years of Bank of Ghana USD/GHS
+  reference rates. The parametric model fails the Kupiec backtest
+  outright; GARCH(1,1) reveals IGARCH persistence and a 2.32x conditional
+  VaR uplift. A daily risk report using historical simulation is provided
+  as the primary measure.
+keywords:
+  - value-at-risk
+  - market-risk
+  - ghana
+  - basel-iii
+  - garch
+  - kupiec-backtest
+  - expected-shortfall

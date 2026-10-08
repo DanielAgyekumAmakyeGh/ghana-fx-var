@@ -1,0 +1,28 @@
+======================================================================
+ GCIB | Daily FX Risk Report        | 2025-12-31
+======================================================================
+ Currency pair        : USD/GHS
+ Spot rate            : 10.4500
+ Position             : USD 20,000,000
+ Position value       : GHS 209,000,000.00
+ Confidence           : 99.00%
+======================================================================
+
+ HISTORICAL SIMULATION VaR (primary measure)
+   Rolling 250-day window    : GHS    9,581,018.42
+   Full sample (2725 days)   : GHS    3,951,268.46
+   Recency uplift        : 2.425x
+
+ EXPECTED SHORTFALL
+   Rolling 250-day window    : GHS   11,279,489.48
+   Full sample           : GHS    9,229,125.87
+
+ SECONDARY CHECK (parametric on rolling window)
+   Parametric VaR        : GHS    4,545,546.12
+   Parametric vs Hist    : 0.474x
+
+ RECENT REGIME
+   Realised vol (ann.)   : 14.8411%
+   Breaches in window    : 3
+   Expected (1% of 250) : 2.50
+======================================================================
